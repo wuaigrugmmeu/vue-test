@@ -1,46 +1,61 @@
 <template>
   <div class="user-list-container">
-    <!-- 搜索和操作按钮区域 -->
-    <div class="search-area">
-      <el-form :inline="true" class="search-form">
-        <el-form-item label="用户名">
-          <el-input
-            v-model="searchForm.username"
-            placeholder="请输入用户名"
-            clearable
-            @keyup.enter="handleSearch"
-          ></el-input>
-        </el-form-item>
-        
-        <el-form-item label="角色">
-          <el-select v-model="searchForm.role" placeholder="请选择角色" clearable>
-            <el-option label="全部角色" value=""></el-option>
-            <el-option label="管理员" value="admin"></el-option>
-            <el-option label="编辑" value="editor"></el-option>
-            <el-option label="普通用户" value="user"></el-option>
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部状态" value=""></el-option>
-            <el-option label="启用" value="active"></el-option>
-            <el-option label="禁用" value="inactive"></el-option>
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>搜索
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <!-- 使用通用搜索表单 -->
+    <SearchForm
+      :loading="loading"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <el-form-item label="用户名">
+        <el-input
+          v-model="searchForm.username"
+          placeholder="请输入用户名"
+          clearable
+          @keyup.enter="handleSearch"
+        ></el-input>
+      </el-form-item>
+      
+      <el-form-item label="角色">
+        <el-select v-model="searchForm.role" placeholder="请选择角色" clearable>
+          <el-option label="全部角色" value=""></el-option>
+          <el-option 
+            v-for="(label, value) in roleMapping" 
+            :key="value" 
+            :label="label" 
+            :value="value"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+      
+      <el-form-item label="状态">
+        <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+          <el-option label="全部状态" value=""></el-option>
+          <el-option label="启用" value="active"></el-option>
+          <el-option label="禁用" value="inactive"></el-option>
+        </el-select>
+      </el-form-item>
+    </SearchForm>
 
-      <div class="action-buttons">
+    <!-- 使用通用表格组件 -->
+    <BaseTable
+      ref="tableRef"
+      :data="users"
+      :loading="loading"
+      :pagination="pagination"
+      :max-height="null"
+      :auto-height="true"
+      @selection-change="handleSelectionChange"
+      @page-change="changePage"
+      @page-size-change="handlePageSizeChange"
+    >
+      <!-- 工具栏 -->
+      <template #toolbar-left>
         <el-button type="primary" @click="$emit('add')">
           <el-icon><Plus /></el-icon>添加用户
         </el-button>
+      </template>
+      
+      <template #toolbar-right>
         <el-button
           type="danger"
           :disabled="selectedRows.length === 0"
@@ -48,18 +63,9 @@
         >
           <el-icon><Delete /></el-icon>批量删除 ({{ selectedRows.length }})
         </el-button>
-      </div>
-    </div>
-
-    <!-- 数据表格 -->
-    <el-table
-      ref="tableRef"
-      :data="users"
-      style="width: 100%"
-      border
-      v-loading="loading"
-      @selection-change="handleSelectionChange"
-    >
+      </template>
+      
+      <!-- 表格列 -->
       <el-table-column type="selection" width="55"></el-table-column>
       
       <el-table-column label="用户名" prop="username" min-width="180">
@@ -80,7 +86,7 @@
       <el-table-column label="角色" prop="role">
         <template #default="{ row }">
           <el-tag
-            :type="getRoleType(row.role)"
+            :type="getRoleTagType(row.role)"
             effect="light"
           >
             {{ roleMapping[row.role] || row.role }}
@@ -94,7 +100,7 @@
             :type="row.status === 'active' ? 'success' : 'danger'"
             effect="light"
           >
-            {{ row.status === 'active' ? '启用' : '禁用' }}
+            {{ statusMapping[row.status] }}
           </el-tag>
         </template>
       </el-table-column>
@@ -121,42 +127,7 @@
           </div>
         </template>
       </el-table-column>
-      
-      <template #empty>
-        <div style="text-align: center; padding: 30px 0">
-          <el-empty description="暂无用户数据"></el-empty>
-        </div>
-      </template>
-    </el-table>
-
-    <!-- 分页组件 -->
-    <div class="pagination-container">
-      <div class="total-info">共 {{ pagination.total }} 条数据</div>
-      <div class="pagination-control">
-        <el-select
-          v-model="pageSize"
-          style="width: 100px"
-          @change="handlePageSizeChange"
-          size="small"
-        >
-          <el-option
-            v-for="item in [10, 20, 50, 100]"
-            :key="item"
-            :label="`${item}条/页`"
-            :value="item"
-          ></el-option>
-        </el-select>
-        
-        <el-pagination
-          background
-          layout="prev, pager, next, jumper"
-          :current-page="currentPage"
-          :page-size="pageSize"
-          :total="pagination.total"
-          @current-change="changePage"
-        ></el-pagination>
-      </div>
-    </div>
+    </BaseTable>
 
     <!-- 确认删除对话框 -->
     <el-dialog
@@ -177,8 +148,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
+import { ref, watch } from 'vue'
+import { Plus, Delete, Edit } from '@element-plus/icons-vue'
+import BaseTable from './common/BaseTable.vue'
+import SearchForm from './common/SearchForm.vue'
+import { getRoleTagType, roleMapping, statusMapping } from '../utils/formatter.js'
+// 重命名导入的confirmDelete为showDeleteConfirm，避免命名冲突
+import { confirmDelete as showDeleteConfirm } from '../utils/tableHelper.js'
 
 const props = defineProps({
   users: {
@@ -200,23 +176,6 @@ const emit = defineEmits(['search', 'reset', 'page-change', 'page-size-change', 
 // 表格引用
 const tableRef = ref(null)
 
-// 角色映射表
-const roleMapping = {
-  'admin': '管理员',
-  'editor': '编辑',
-  'user': '普通用户'
-}
-
-// 获取角色对应的标签类型
-const getRoleType = (role) => {
-  const typeMap = {
-    'admin': 'danger',
-    'editor': 'warning',
-    'user': 'info'
-  }
-  return typeMap[role] || 'info'
-}
-
 // 搜索表单
 const searchForm = ref({
   username: '',
@@ -226,13 +185,6 @@ const searchForm = ref({
 
 // 选中的行
 const selectedRows = ref([])
-
-// 分页
-const pageSize = ref(props.pagination.pageSize || 10)
-const currentPage = computed({
-  get: () => props.pagination.page,
-  set: (val) => emit('page-change', val)
-})
 
 // 确认对话框
 const confirmDialog = ref({
@@ -263,8 +215,8 @@ const changePage = (page) => {
 }
 
 // 更改每页条数
-const handlePageSizeChange = () => {
-  emit('page-size-change', pageSize.value)
+const handlePageSizeChange = (pageSize) => {
+  emit('page-size-change', pageSize)
 }
 
 // 表格多选变化
@@ -318,46 +270,22 @@ watch(() => props.users, () => {
 
 <style scoped>
 .user-list-container {
-  padding: 24px;
-}
-
-.search-area {
-  margin-bottom: 24px;
-  background-color: #fff;
-  border-radius: 4px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .search-form {
+  flex-shrink: 0;
+}
+
+/* 让BaseTable占据剩余所有空间 */
+:deep(.base-table-container) {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-  gap: 16px;
-}
-
-.search-form .el-form-item {
-  margin-bottom: 8px;
-  margin-right: 0;
-}
-
-/* 优化下拉选项样式 */
-:deep(.el-select) {
-  width: 180px;
-}
-
-:deep(.el-input__wrapper) {
-  width: 100%;
-}
-
-:deep(.el-select-dropdown__item) {
-  padding: 0 20px;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0 10px;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .user-info-cell {
@@ -370,39 +298,8 @@ watch(() => props.users, () => {
   gap: 8px;
 }
 
-.pagination-container {
+.dialog-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-  padding: 15px 10px;
-  background-color: #fff;
-  border-radius: 4px;
-}
-
-.pagination-control {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.el-tag {
-  margin-right: 5px;
-}
-
-/* 增加表格边距 */
-.el-table {
-  margin-top: 15px;
-}
-
-/* 修改表头样式 */
-:deep(.el-table__header) {
-  font-weight: 600;
-  background-color: #f5f7fa;
-}
-
-/* 修改表格行高 */
-:deep(.el-table__row) {
-  height: 50px;
+  justify-content: flex-end;
 }
 </style>

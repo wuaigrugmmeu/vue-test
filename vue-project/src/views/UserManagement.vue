@@ -1,80 +1,44 @@
 <template>
-  <div class="user-management">
-    <SideMenu 
-      :activeMenu="activeMenu"
-      @menu-select="handleMenuSelect"
+  <AdminLayout 
+    :activeMenu="activeMenu" 
+    :pageTitle="pageTitle"
+    @menu-select="handleMenuSelect"
+  >
+    <UserList 
+      v-if="activeComponent === 'list'"
+      :users="userStore.users"
+      :pagination="userStore.pagination"
+      :loading="userStore.loading"
+      @search="handleSearch"
+      @reset="handleResetSearch"
+      @page-change="handlePageChange"
+      @page-size-change="handlePageSizeChange"
+      @add="showAddUserForm"
+      @edit="showEditUserForm"
+      @delete="handleDeleteUser"
+      @batch-delete="handleBatchDelete"
     />
     
-    <div class="main-content">
-      <el-container>
-        <el-header height="60px">
-          <div class="header-content">
-            <h2>{{ pageTitle }}</h2>
-            <div class="header-actions">
-              <el-dropdown trigger="click" @command="handleCommand">
-                <div class="user-dropdown-link">
-                  <el-avatar :size="32" class="header-avatar">
-                    {{ authStore.name ? authStore.name.charAt(0).toUpperCase() : 'U' }}
-                  </el-avatar>
-                  <span class="header-username">{{ authStore.name }}</span>
-                  <el-icon class="el-icon--right"><arrow-down /></el-icon>
-                </div>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="logout">
-                      <el-icon><switch-button /></el-icon>退出登录
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-          </div>
-        </el-header>
-        
-        <el-main>
-          <div class="content-body">
-            <UserList 
-              v-if="activeComponent === 'list'"
-              :users="userStore.users"
-              :pagination="userStore.pagination"
-              :loading="userStore.loading"
-              @search="handleSearch"
-              @reset="handleResetSearch"
-              @page-change="handlePageChange"
-              @page-size-change="handlePageSizeChange"
-              @add="showAddUserForm"
-              @edit="showEditUserForm"
-              @delete="handleDeleteUser"
-              @batch-delete="handleBatchDelete"
-            />
-            
-            <UserForm
-              v-if="activeComponent === 'form'"
-              :user="currentUser"
-              :isSubmitting="userStore.submitting"
-              @submit="handleSubmitForm"
-              @cancel="cancelUserForm"
-            />
-          </div>
-        </el-main>
-      </el-container>
-    </div>
-  </div>
+    <UserForm
+      v-if="activeComponent === 'form'"
+      :user="currentUser"
+      :isSubmitting="userStore.submitting"
+      @submit="handleSubmitForm"
+      @cancel="cancelUserForm"
+    />
+  </AdminLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import SideMenu from '../components/SideMenu.vue'
+import AdminLayout from '../components/layout/AdminLayout.vue'
 import UserList from '../components/UserList.vue'
 import UserForm from '../components/UserForm.vue'
 import { useUserStore } from '../stores/user.js'
-import { useAuthStore } from '../stores/auth.js'
-import { ArrowDown, SwitchButton } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
-const authStore = useAuthStore()
 
 // 活跃菜单项
 const activeMenu = ref('users')
@@ -191,94 +155,8 @@ const handleMenuSelect = (menuId) => {
       break
   }
 }
-
-// 处理用户操作命令
-const handleCommand = (command) => {
-  if (command === 'logout') {
-    authStore.logout()
-    router.push('/login')
-  }
-}
 </script>
 
 <style scoped>
-.user-management {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-color);
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  padding: 0 var(--spacing-large);
-  box-shadow: var(--box-shadow-light);
-  background-color: var(--white);
-}
-
-.header-content h2 {
-  margin: 0;
-  font-size: var(--font-size-large);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-}
-
-.user-dropdown-link {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.header-avatar {
-  margin-right: var(--spacing-small);
-}
-
-.header-username {
-  margin-right: var(--spacing-small);
-  font-size: var(--font-size-medium);
-  color: var(--text-secondary);
-}
-
-.el-main {
-  padding: 0;
-  overflow-x: hidden;
-}
-
-.content-body {
-  background-color: transparent;
-  border-radius: var(--border-radius-medium);
-}
-
-/* 响应式适配 */
-@media (max-width: 768px) {
-  .user-management {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .main-content {
-    width: 100%;
-    overflow: visible;
-  }
-  
-  .header-content {
-    padding: 0 var(--spacing-medium);
-  }
-}
+/* 所有样式已移至布局组件，不需要在这里重复 */
 </style>

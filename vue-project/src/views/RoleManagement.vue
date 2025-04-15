@@ -1,83 +1,47 @@
 <template>
-  <div class="role-management">
-    <SideMenu 
-      :activeMenu="activeMenu"
-      @menu-select="handleMenuSelect"
+  <AdminLayout 
+    :activeMenu="activeMenu" 
+    :pageTitle="pageTitle"
+    @menu-select="handleMenuSelect"
+  >
+    <RoleList 
+      v-if="activeComponent === 'list'"
+      :roles="roleStore.roles"
+      :pagination="roleStore.pagination"
+      :loading="roleStore.loading"
+      @search="handleSearch"
+      @reset="handleResetSearch"
+      @page-change="handlePageChange"
+      @page-size-change="handlePageSizeChange"
+      @add="showAddRoleForm"
+      @edit="showEditRoleForm"
+      @delete="handleDeleteRole"
+      @batch-delete="handleBatchDelete"
+      @permission="showPermissionDialog"
+      @message="handleMessage"
     />
     
-    <div class="main-content">
-      <el-container>
-        <el-header height="60px">
-          <div class="header-content">
-            <h2>{{ pageTitle }}</h2>
-            <div class="header-actions">
-              <el-dropdown trigger="click" @command="handleCommand">
-                <div class="user-dropdown-link">
-                  <el-avatar :size="32" class="header-avatar">
-                    {{ authStore.name ? authStore.name.charAt(0).toUpperCase() : 'U' }}
-                  </el-avatar>
-                  <span class="header-username">{{ authStore.name }}</span>
-                  <el-icon class="el-icon--right"><arrow-down /></el-icon>
-                </div>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="logout">
-                      <el-icon><switch-button /></el-icon>退出登录
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-          </div>
-        </el-header>
-        
-        <el-main>
-          <div class="content-body">
-            <RoleList 
-              v-if="activeComponent === 'list'"
-              :roles="roleStore.roles"
-              :pagination="roleStore.pagination"
-              :loading="roleStore.loading"
-              @search="handleSearch"
-              @reset="handleResetSearch"
-              @page-change="handlePageChange"
-              @page-size-change="handlePageSizeChange"
-              @add="showAddRoleForm"
-              @edit="showEditRoleForm"
-              @delete="handleDeleteRole"
-              @batch-delete="handleBatchDelete"
-              @permission="showPermissionDialog"
-              @message="handleMessage"
-            />
-            
-            <RoleForm
-              v-if="activeComponent === 'form'"
-              :role="currentRole"
-              :isSubmitting="roleStore.submitting"
-              @submit="handleSubmitForm"
-              @cancel="cancelRoleForm"
-            />
-          </div>
-        </el-main>
-      </el-container>
-    </div>
-  </div>
+    <RoleForm
+      v-if="activeComponent === 'form'"
+      :role="currentRole"
+      :isSubmitting="roleStore.submitting"
+      @submit="handleSubmitForm"
+      @cancel="cancelRoleForm"
+    />
+  </AdminLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import SideMenu from '../components/SideMenu.vue'
+import AdminLayout from '../components/layout/AdminLayout.vue'
 import RoleList from '../components/RoleList.vue'
 import RoleForm from '../components/RoleForm.vue'
 import { useRoleStore } from '../stores/role.js'
-import { useAuthStore } from '../stores/auth.js'
-import { ArrowDown, SwitchButton } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const roleStore = useRoleStore()
-const authStore = useAuthStore()
 
 // 活跃菜单项
 const activeMenu = ref('roles')
@@ -207,95 +171,8 @@ const handleMessage = (messageObj) => {
     title: messageObj.title
   })
 }
-
-// 处理用户操作命令
-const handleCommand = (command) => {
-  if (command === 'logout') {
-    authStore.logout()
-    router.push('/login')
-  }
-}
 </script>
 
 <style scoped>
-.role-management {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-color);
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  padding: 0 var(--spacing-large);
-  box-shadow: var(--box-shadow-light);
-  background-color: var(--white);
-}
-
-.header-content h2 {
-  margin: 0;
-  font-size: var(--font-size-large);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-}
-
-.user-dropdown-link {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.header-avatar {
-  margin-right: var(--spacing-small);
-}
-
-.header-username {
-  margin-right: var(--spacing-small);
-  font-size: var(--font-size-medium);
-  color: var(--text-secondary);
-}
-
-.el-main {
-  padding: var(--spacing-medium);
-  overflow-x: hidden;
-}
-
-.content-body {
-  background-color: var(--white);
-  border-radius: var(--border-radius-medium);
-  box-shadow: var(--box-shadow-light);
-}
-
-/* 响应式适配 */
-@media (max-width: 768px) {
-  .role-management {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .main-content {
-    width: 100%;
-    overflow: visible;
-  }
-  
-  .header-content {
-    padding: 0 var(--spacing-medium);
-  }
-}
+/* 所有样式已移至布局组件，不需要在这里重复 */
 </style>

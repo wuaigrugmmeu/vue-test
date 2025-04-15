@@ -1,46 +1,58 @@
 <template>
   <div class="role-list-container">
-    <!-- 搜索和操作按钮区域 -->
-    <div class="search-area">
-      <el-form :inline="true" class="search-form">
-        <el-form-item label="角色名称">
-          <el-input
-            v-model="searchForm.name"
-            placeholder="请输入角色名称"
-            clearable
-            @keyup.enter="handleSearch"
-          ></el-input>
-        </el-form-item>
-        
-        <el-form-item label="角色编码">
-          <el-input
-            v-model="searchForm.code"
-            placeholder="请输入角色编码"
-            clearable
-            @keyup.enter="handleSearch"
-          ></el-input>
-        </el-form-item>
-        
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部状态" value=""></el-option>
-            <el-option label="启用" value="enabled"></el-option>
-            <el-option label="禁用" value="disabled"></el-option>
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>搜索
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <!-- 使用通用搜索表单 -->
+    <SearchForm
+      :loading="loading"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <el-form-item label="角色名称">
+        <el-input
+          v-model="searchForm.name"
+          placeholder="请输入角色名称"
+          clearable
+          @keyup.enter="handleSearch"
+        ></el-input>
+      </el-form-item>
+      
+      <el-form-item label="角色编码">
+        <el-input
+          v-model="searchForm.code"
+          placeholder="请输入角色编码"
+          clearable
+          @keyup.enter="handleSearch"
+        ></el-input>
+      </el-form-item>
+      
+      <el-form-item label="状态">
+        <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+          <el-option label="全部状态" value=""></el-option>
+          <el-option label="启用" value="enabled"></el-option>
+          <el-option label="禁用" value="disabled"></el-option>
+        </el-select>
+      </el-form-item>
+    </SearchForm>
 
-      <div class="action-buttons">
+    <!-- 使用通用表格组件 -->
+    <BaseTable
+      ref="tableRef"
+      :data="roles"
+      :loading="loading"
+      :pagination="pagination"
+      :max-height="null"
+      :auto-height="true"
+      @selection-change="handleSelectionChange"
+      @page-change="changePage"
+      @page-size-change="handlePageSizeChange"
+    >
+      <!-- 工具栏 -->
+      <template #toolbar-left>
         <el-button type="primary" @click="$emit('add')">
           <el-icon><Plus /></el-icon>添加角色
         </el-button>
+      </template>
+      
+      <template #toolbar-right>
         <el-button
           type="danger"
           :disabled="selectedRows.length === 0"
@@ -48,18 +60,9 @@
         >
           <el-icon><Delete /></el-icon>批量删除 ({{ selectedRows.length }})
         </el-button>
-      </div>
-    </div>
-
-    <!-- 数据表格 -->
-    <el-table
-      ref="tableRef"
-      :data="roles"
-      style="width: 100%"
-      border
-      v-loading="loading"
-      @selection-change="handleSelectionChange"
-    >
+      </template>
+      
+      <!-- 表格列 -->
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column label="角色名称" prop="name" min-width="120"></el-table-column>
       <el-table-column label="角色编码" prop="code" min-width="120"></el-table-column>
@@ -71,7 +74,7 @@
             :type="row.status === 'enabled' ? 'success' : 'danger'"
             effect="light"
           >
-            {{ row.status === 'enabled' ? '启用' : '禁用' }}
+            {{ statusMapping[row.status] }}
           </el-tag>
         </template>
       </el-table-column>
@@ -107,42 +110,7 @@
           </div>
         </template>
       </el-table-column>
-      
-      <template #empty>
-        <div style="text-align: center; padding: 30px 0">
-          <el-empty description="暂无角色数据"></el-empty>
-        </div>
-      </template>
-    </el-table>
-
-    <!-- 分页组件 -->
-    <div class="pagination-container">
-      <div class="total-info">共 {{ pagination.total }} 条数据</div>
-      <div class="pagination-control">
-        <el-select
-          v-model="pageSize"
-          style="width: 100px"
-          @change="handlePageSizeChange"
-          size="small"
-        >
-          <el-option
-            v-for="item in [10, 20, 50, 100]"
-            :key="item"
-            :label="`${item}条/页`"
-            :value="item"
-          ></el-option>
-        </el-select>
-        
-        <el-pagination
-          background
-          layout="prev, pager, next, jumper"
-          :current-page="currentPage"
-          :page-size="pageSize"
-          :total="pagination.total"
-          @current-change="changePage"
-        ></el-pagination>
-      </div>
-    </div>
+    </BaseTable>
 
     <!-- 确认删除对话框 -->
     <el-dialog
@@ -163,8 +131,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { Search, Plus, Delete, Edit, Key, Setting } from '@element-plus/icons-vue'
+import { ref, watch } from 'vue'
+import { Plus, Delete, Edit, Setting } from '@element-plus/icons-vue'
+import BaseTable from './common/BaseTable.vue'
+import SearchForm from './common/SearchForm.vue'
+import { statusMapping } from '../utils/formatter.js'
+// 导入并重命名工具函数，避免可能的命名冲突
+import { confirmDelete as showConfirmDialog } from '../utils/tableHelper.js'
 
 const props = defineProps({
   roles: {
@@ -181,7 +154,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['search', 'reset', 'page-change', 'page-size-change', 'delete', 'batch-delete', 'add', 'edit', 'permission'])
+const emit = defineEmits(['search', 'reset', 'page-change', 'page-size-change', 'delete', 'batch-delete', 'add', 'edit', 'permission', 'message'])
 
 // 表格引用
 const tableRef = ref(null)
@@ -195,13 +168,6 @@ const searchForm = ref({
 
 // 选中的行
 const selectedRows = ref([])
-
-// 分页
-const pageSize = ref(props.pagination.pageSize || 10)
-const currentPage = computed({
-  get: () => props.pagination.page,
-  set: (val) => emit('page-change', val)
-})
 
 // 确认对话框
 const confirmDialog = ref({
@@ -232,8 +198,8 @@ const changePage = (page) => {
 }
 
 // 更改每页条数
-const handlePageSizeChange = () => {
-  emit('page-size-change', pageSize.value)
+const handlePageSizeChange = (pageSize) => {
+  emit('page-size-change', pageSize)
 }
 
 // 表格多选变化
@@ -244,8 +210,15 @@ const handleSelectionChange = (selection) => {
 // 删除单个角色
 const handleDelete = (id) => {
   // 内置角色不能删除
-  if (id <= 5) return
+  if (id <= 5) {
+    emit('message', {
+      type: 'warning',
+      message: '内置角色不能删除'
+    })
+    return
+  }
   
+  // 可以使用工具函数，但这里保留原有逻辑以保持一致性
   confirmDialog.value = {
     show: true,
     message: '确定要删除该角色吗？',
@@ -303,94 +276,32 @@ watch(() => props.roles, () => {
 
 <style scoped>
 .role-list-container {
-  padding: 24px;
-}
-
-.search-area {
-  margin-bottom: 24px;
-  background-color: #fff;
-  border-radius: 4px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .search-form {
+  flex-shrink: 0;
+}
+
+/* 让BaseTable占据剩余所有空间 */
+:deep(.base-table-container) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-buttons-cell {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 18px;
-  gap: 16px;
-}
-
-.search-form .el-form-item {
-  margin-bottom: 8px;
-  margin-right: 0;
-}
-
-/* 优化下拉选项样式 */
-:deep(.el-select) {
-  width: 180px;
-}
-
-:deep(.el-input__wrapper) {
-  width: 100%;
-}
-
-:deep(.el-select-dropdown__item) {
-  padding: 0 20px;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0 10px;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-  padding: 15px 10px;
-  background-color: #fff;
-  border-radius: 4px;
-}
-
-.pagination-control {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 15px;
-}
-
-.el-tag {
-  margin-right: 5px;
-}
-
-/* 增加表格边距 */
-.el-table {
-  margin-top: 15px;
-}
-
-/* 修改表头样式 */
-:deep(.el-table__header) {
-  font-weight: 600;
-  background-color: #f5f7fa;
-}
-
-/* 修改表格行高 */
-:deep(.el-table__row) {
-  height: 50px;
-}
-
-/* 优化操作按钮样式 */
-.action-buttons-cell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 </style>
