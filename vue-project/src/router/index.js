@@ -1,52 +1,60 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
 import HomeView from '../views/HomeView.vue'
 import UserManagement from '../views/UserManagement.vue'
 import RoleManagement from '../views/RoleManagement.vue'
-
-const routes = [
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login
-  },
-  {
-    path: '/',
-    name: 'Home',
-    component: HomeView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/users',
-    name: 'UserManagement',
-    component: UserManagement,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/roles',
-    name: 'RoleManagement',
-    component: RoleManagement,
-    meta: { requiresAuth: true }
-  }
-]
+import Login from '../views/Login.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      // 将根路径重定向到用户管理页面
+      redirect: '/users'
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: HomeView
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: UserManagement
+    },
+    {
+      path: '/roles',
+      name: 'roles',
+      component: RoleManagement
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    }
+  ]
 })
 
-// 全局导航守卫，用于验证用户是否已登录
+// 路由守卫，验证是否登录
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  const isAuthenticated = localStorage.getItem('token')
   
-  // 如果访问的路由需要登录且没有token，则跳转到登录页面
-  if (to.meta.requiresAuth && !token) {
-    next('/login')
-  } else if (to.path === '/login' && token) {
-    // 如果用户已登录且尝试访问登录页，则跳转到首页
-    next('/')
+  // 登录页可以直接访问
+  if (to.path === '/login') {
+    if (isAuthenticated) {
+      // 如果已登录且尝试访问登录页，重定向到用户管理页面
+      next('/users')
+    } else {
+      next()
+    }
   } else {
-    next()
+    // 其他页面需要验证登录状态
+    if (isAuthenticated) {
+      next() // 已登录，继续访问
+    } else {
+      next('/login') // 未登录，重定向到登录页
+    }
   }
 })
 

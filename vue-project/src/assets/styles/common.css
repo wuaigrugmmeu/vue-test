@@ -1,0 +1,206 @@
+/* filepath: /workspaces/vue-test/vue-project/src/assets/styles/common.css */
+@import './variables.css';
+
+/* 布局类 */
+.page-container {
+  padding: var(--spacing-large);
+  height: 100%;
+  overflow: auto;
+}
+
+.card-container {
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow-light);
+  padding: var(--spacing-large);
+  margin-bottom: var(--spacing-large);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 边距类 */
+.mb-large {
+  margin-bottom: var(--spacing-large);
+}
+
+.mb-medium {
+  margin-bottom: var(--spacing-medium);
+}
+
+.mb-small {
+  margin-bottom: var(--spacing-small);
+}
+
+.mt-large {
+  margin-top: var(--spacing-large);
+}
+
+.mt-medium {
+  margin-top: var(--spacing-medium);
+}
+
+.mt-small {
+  margin-top: var(--spacing-small);
+}
+
+.ml-small {
+  margin-left: var(--spacing-small);
+}
+
+.mr-small {
+  margin-right: var(--spacing-small);
+}
+
+/* 表单相关 */
+.search-area {
+  margin-bottom: var(--spacing-large);
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-large);
+  box-shadow: var(--box-shadow-light);
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-medium);
+}
+
+/* 表格相关 */
+.table-container {
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-medium);
+  box-shadow: var(--box-shadow-light);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-large);
+  padding: var(--spacing-medium) var(--spacing-small);
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--spacing-medium);
+  }
+  
+  .card-container {
+    padding: var(--spacing-medium);
+  }
+  
+  .search-form .el-form-item {
+    width: 100%;
+  }
+}
+
+/* 动画过渡 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 常用文本样式 */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-warning {
+  color: var(--warning-color);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* 背景色 */
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-light {
+  background-color: var(--background-color-light);
+}
+
+/* 边框 */
+.border {
+  border: 1px solid var(--border-color);
+}
+
+.border-top {
+  border-top: 1px solid var(--border-color);
+}
+
+.border-bottom {
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 阴影 */
+.shadow-sm {
+  box-shadow: var(--box-shadow-light);
+}
+
+.shadow {
+  box-shadow: var(--box-shadow-base);
+}
+
+.shadow-lg {
+  box-shadow: var(--box-shadow-dark);
+}
+
+/* 圆角 */
+.rounded {
+  border-radius: var(--border-radius-medium);
+}
+
+.rounded-lg {
+  border-radius: var(--border-radius-large);
+}
+
+.rounded-sm {
+  border-radius: var(--border-radius-small);
+}

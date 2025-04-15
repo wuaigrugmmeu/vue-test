@@ -1,7 +1,7 @@
 <template>
-  <div class="login-container">
-    <div class="login-box">
-      <h2>系统登录</h2>
+  <div class="login-container flex-center">
+    <div class="login-box shadow rounded">
+      <h2 class="text-center">系统登录</h2>
       <div class="form-item">
         <label>账号：</label>
         <input 
@@ -20,16 +20,16 @@
           @keyup.enter="handleLogin"
         />
       </div>
-      <div class="form-item tips">
-        <p>测试账号: admin / 123456</p>
+      <div class="form-item tips text-right">
+        <p class="text-secondary">测试账号: admin / 123456</p>
       </div>
       <div class="btn-container">
         <button 
-          :disabled="loading" 
+          :disabled="authStore.loading" 
           @click="handleLogin"
           class="login-btn"
         >
-          {{ loading ? '登录中...' : '登 录' }}
+          {{ authStore.loading ? '登录中...' : '登 录' }}
         </button>
       </div>
     </div>
@@ -37,12 +37,13 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { login } from '../api/auth.js'
+import { useAuthStore } from '../stores/auth.js'
 
 const router = useRouter()
-const loading = ref(false)
+const authStore = useAuthStore()
+
 const loginForm = reactive({
   username: '',
   password: ''
@@ -56,75 +57,61 @@ const handleLogin = async () => {
   }
 
   try {
-    loading.value = true
-    const res = await login(loginForm.username, loginForm.password)
-    
-    // 将用户信息和token存储到localStorage
-    localStorage.setItem('token', res.data.token)
-    localStorage.setItem('userInfo', JSON.stringify(res.data.userInfo))
-    
-    alert('登录成功')
-    
-    // 登录成功后跳转到首页
-    router.push('/')
+    await authStore.login(loginForm.username, loginForm.password)
+    // 登录成功后直接跳转到用户管理页面，而非首页
+    router.push('/users')
   } catch (error) {
-    alert(error.message || '登录失败，请检查用户名和密码')
-  } finally {
-    loading.value = false
+    // 错误由状态管理中处理，不需要再次处理
+    console.error('登录失败:', error)
   }
 }
 </script>
 
 <style scoped>
 .login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
 }
 
 .login-box {
   width: 350px;
-  padding: 30px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-large);
+  background: var(--white);
 }
 
 h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #409eff;
+  margin-bottom: var(--spacing-large);
+  color: var(--primary-color);
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-medium);
 }
 
 .form-item label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-extra-small);
   font-weight: bold;
 }
 
 .form-item input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
   box-sizing: border-box;
 }
 
 .login-btn {
   width: 100%;
   padding: 12px 0;
-  background-color: #409eff;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--white);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-medium);
+  transition: background-color var(--transition-duration) var(--transition-timing-function);
 }
 
 .login-btn:hover {
@@ -137,9 +124,7 @@ h2 {
 }
 
 .tips {
-  font-size: 12px;
-  color: #606266;
-  text-align: right;
+  font-size: var(--font-size-extra-small);
   margin-top: -10px;
   margin-bottom: 10px;
 }

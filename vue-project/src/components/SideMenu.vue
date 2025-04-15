@@ -20,18 +20,31 @@
     
     <div class="user-info">
       <el-avatar :size="40" class="user-avatar">
-        {{ userInfo.name ? userInfo.name.charAt(0).toUpperCase() : 'U' }}
+        {{ authStore.name ? authStore.name.charAt(0).toUpperCase() : 'U' }}
       </el-avatar>
       <div class="user-details">
-        <div class="username">{{ userInfo.name || '用户' }}</div>
+        <div class="username">{{ authStore.name || '用户' }}</div>
         <div class="role">管理员</div>
       </div>
+      
+      <!-- 添加醒目的退出登录按钮 -->
+      <el-button 
+        type="danger" 
+        size="small" 
+        class="logout-btn"
+        @click="handleLogout"
+      >
+        <el-icon><SwitchButton /></el-icon>
+        退出
+      </el-button>
     </div>
   </el-menu>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
+import { SwitchButton } from '@element-plus/icons-vue'
 
 const props = defineProps({
   activeMenu: {
@@ -41,11 +54,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['menu-select'])
-
-const userInfo = ref({
-  name: '',
-  username: ''
-})
+const authStore = useAuthStore()
 
 const menuItems = [
   { id: 'dashboard', label: '仪表盘', icon: 'Odometer' },
@@ -58,19 +67,16 @@ const selectMenu = (menuId) => {
   emit('menu-select', menuId)
 }
 
-onMounted(() => {
-  // 从localStorage获取用户信息
-  const storedUserInfo = localStorage.getItem('userInfo')
-  if (storedUserInfo) {
-    userInfo.value = JSON.parse(storedUserInfo)
-  }
-})
+const handleLogout = () => {
+  authStore.logout()
+}
 </script>
 
 <style scoped>
 .side-menu {
   height: 100vh;
   width: 220px;
+  transition: width var(--transition-duration) var(--transition-timing-function);
 }
 
 .logo-container {
@@ -79,13 +85,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  padding: 20px 0;
+  padding: var(--spacing-medium) 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo-title {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--font-size-medium);
   font-weight: 500;
 }
 
@@ -93,16 +99,18 @@ onMounted(() => {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 15px;
+  padding: var(--spacing-medium);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background-color: #4b545c;
 }
 
 .user-avatar {
-  background-color: #409EFF;
-  margin-right: 10px;
+  background-color: var(--primary-color);
+  margin-right: var(--spacing-small);
 }
 
 .user-details {
@@ -112,19 +120,38 @@ onMounted(() => {
 .username {
   font-weight: 500;
   color: white;
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 .role {
-  font-size: 12px;
+  font-size: var(--font-size-extra-small);
   color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
 }
 
+.logout-btn {
+  margin-top: 8px;
+  width: 100%;
+}
+
 .el-menu-item [class^="el-icon-"] {
-  margin-right: 5px;
+  margin-right: var(--spacing-extra-small);
   width: 24px;
   text-align: center;
-  font-size: 18px;
+  font-size: var(--font-size-medium);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .side-menu {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .user-info {
+    position: relative;
+    margin-top: var(--spacing-medium);
+  }
 }
 </style>

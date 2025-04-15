@@ -1,29 +1,34 @@
 <template>
-  <div class="home">
-    <header>
-      <img alt="Vue logo" class="logo" src="../assets/logo.svg" width="125" height="125" />
-      <div class="header-content">
-        <h1>Vue 3 应用首页</h1>
-        <div class="user-info">
-          <span>欢迎，{{ userInfo.name }}</span>
-          <button @click="handleLogout" class="logout-btn">退出登录</button>
+  <div class="home page-container">
+    <header class="header space-between mb-large">
+      <div class="logo-section flex">
+        <img alt="Vue logo" class="logo" src="../assets/logo.svg" width="50" height="50" />
+        <div class="header-title">
+          <h1>Vue 3 应用首页</h1>
         </div>
+      </div>
+      <div class="user-info flex">
+        <span class="welcome-text">欢迎，{{ authStore.name }}</span>
+        <el-button type="danger" size="small" @click="handleLogout" class="logout-btn">
+          <el-icon><SwitchButton /></el-icon>
+          退出登录
+        </el-button>
       </div>
     </header>
 
     <main>
-      <div class="content">
-        <h2>系统功能</h2>
+      <div class="content card-container">
+        <h2 class="mb-medium">系统功能</h2>
         <div class="feature-cards">
           <div class="card" @click="navigateTo('/users')">
             <div class="card-icon">👥</div>
             <h3>用户管理</h3>
             <p>管理系统用户，支持增删改查和分页查询</p>
           </div>
-          <div class="card disabled">
+          <div class="card" @click="navigateTo('/roles')">
             <div class="card-icon">🔑</div>
             <h3>角色管理</h3>
-            <p>管理系统角色和权限（即将推出）</p>
+            <p>管理系统角色和权限</p>
           </div>
           <div class="card disabled">
             <div class="card-icon">⚙️</div>
@@ -37,32 +42,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { logout } from '../api/auth.js'
+import { useAuthStore } from '../stores/auth.js'
+import { SwitchButton } from '@element-plus/icons-vue'
 
 const router = useRouter()
-const userInfo = ref({
-  name: '用户',
-  username: ''
-})
+const authStore = useAuthStore()
 
 onMounted(() => {
-  // 获取存储的用户信息
-  const storedUserInfo = localStorage.getItem('userInfo')
-  if (storedUserInfo) {
-    userInfo.value = JSON.parse(storedUserInfo)
-  }
+  // 确保状态正确
+  authStore.checkAuth()
 })
 
 const handleLogout = async () => {
   try {
-    await logout()
-    // 清除本地存储的登录信息
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
-    // 跳转到登录页
-    router.push('/login')
+    await authStore.logout()
+    // 退出逻辑在store中处理，包括页面重定向
   } catch (error) {
     console.error('退出登录失败', error)
   }
@@ -77,85 +73,57 @@ const navigateTo = (path) => {
 .home {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
 }
 
-header {
-  display: flex;
+.header {
+  padding-bottom: var(--spacing-medium);
+  border-bottom: 1px solid var(--border-color-lighter);
+}
+
+.logo-section {
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
+  gap: var(--spacing-medium);
 }
 
 .logo {
-  margin-right: 20px;
-}
-
-.header-content {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-right: var(--spacing-medium);
 }
 
 h1 {
   margin: 0;
-  color: #409eff;
+  color: var(--primary-color);
+  font-size: var(--font-size-large);
 }
 
 .user-info {
-  display: flex;
   align-items: center;
-  gap: 15px;
+  gap: var(--spacing-medium);
 }
 
-.logout-btn {
-  background-color: #f56c6c;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background-color: #ff7d7d;
-}
-
-.content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  margin-top: 0;
-  color: #303133;
-  margin-bottom: 25px;
+.welcome-text {
+  color: var(--text-regular);
 }
 
 .feature-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 30px;
+  gap: var(--spacing-medium);
+  margin-top: var(--spacing-medium);
 }
 
 .card {
-  background-color: #f9fafb;
-  border-radius: 8px;
-  padding: 25px;
-  transition: all 0.3s ease;
+  background-color: var(--background-color-light);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-large);
+  transition: all var(--transition-duration) var(--transition-timing-function);
   cursor: pointer;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-  border: 1px solid #eaeaea;
+  box-shadow: var(--box-shadow-light);
+  border: 1px solid var(--border-color-lighter);
 }
 
 .card:hover:not(.disabled) {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-dark);
   background-color: #f0f7ff;
 }
 
@@ -166,17 +134,35 @@ h2 {
 
 .card-icon {
   font-size: 2rem;
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-medium);
 }
 
 .card h3 {
-  color: #303133;
+  color: var(--text-primary);
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: var(--spacing-small);
 }
 
 .card p {
-  color: #606266;
+  color: var(--text-secondary);
   margin: 0;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-medium);
+  }
+  
+  .user-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .feature-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

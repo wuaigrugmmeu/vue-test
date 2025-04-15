@@ -101,24 +101,24 @@
       
       <el-table-column label="创建时间" prop="createTime"></el-table-column>
       
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
-          <el-button
-            type="primary"
-            size="small"
-            text
-            @click="$emit('edit', row)"
-          >
-            <el-icon><Edit /></el-icon>编辑
-          </el-button>
-          <el-button
-            type="danger"
-            size="small"
-            text
-            @click="handleDelete(row.id)"
-          >
-            <el-icon><Delete /></el-icon>删除
-          </el-button>
+          <div class="action-buttons-cell">
+            <el-button
+              type="primary"
+              size="small"
+              @click="$emit('edit', row)"
+            >
+              <el-icon><Edit /></el-icon>编辑
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click="handleDelete(row.id)"
+            >
+              <el-icon><Delete /></el-icon>删除
+            </el-button>
+          </div>
         </template>
       </el-table-column>
       
@@ -341,6 +341,19 @@ watch(() => props.users, () => {
   margin-right: 0;
 }
 
+/* 优化下拉选项样式 */
+:deep(.el-select) {
+  width: 180px;
+}
+
+:deep(.el-input__wrapper) {
+  width: 100%;
+}
+
+:deep(.el-select-dropdown__item) {
+  padding: 0 20px;
+}
+
 .action-buttons {
   display: flex;
   justify-content: space-between;
@@ -350,6 +363,11 @@ watch(() => props.users, () => {
 .user-info-cell {
   display: flex;
   align-items: center;
+}
+
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
 }
 
 .pagination-container {
