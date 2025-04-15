@@ -78,7 +78,7 @@
       
       <el-table-column label="创建时间" prop="createTime"></el-table-column>
       
-      <el-table-column label="操作" width="220" fixed="right">
+      <el-table-column label="操作" width="250" fixed="right">
         <template #default="{ row }">
           <div class="action-buttons-cell">
             <el-button

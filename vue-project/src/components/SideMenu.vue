@@ -26,17 +26,6 @@
         <div class="username">{{ authStore.name || '用户' }}</div>
         <div class="role">管理员</div>
       </div>
-      
-      <!-- 添加醒目的退出登录按钮 -->
-      <el-button 
-        type="danger" 
-        size="small" 
-        class="logout-btn"
-        @click="handleLogout"
-      >
-        <el-icon><SwitchButton /></el-icon>
-        退出
-      </el-button>
     </div>
   </el-menu>
 </template>
@@ -44,7 +33,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
-import { SwitchButton } from '@element-plus/icons-vue'
 
 const props = defineProps({
   activeMenu: {
@@ -65,10 +53,6 @@ const menuItems = [
 
 const selectMenu = (menuId) => {
   emit('menu-select', menuId)
-}
-
-const handleLogout = () => {
-  authStore.logout()
 }
 </script>
 
@@ -127,11 +111,6 @@ const handleLogout = () => {
   font-size: var(--font-size-extra-small);
   color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
-}
-
-.logout-btn {
-  margin-top: 8px;
-  width: 100%;
 }
 
 .el-menu-item [class^="el-icon-"] {

@@ -10,6 +10,24 @@
         <el-header height="60px">
           <div class="header-content">
             <h2>{{ pageTitle }}</h2>
+            <div class="header-actions">
+              <el-dropdown trigger="click" @command="handleCommand">
+                <div class="user-dropdown-link">
+                  <el-avatar :size="32" class="header-avatar">
+                    {{ authStore.name ? authStore.name.charAt(0).toUpperCase() : 'U' }}
+                  </el-avatar>
+                  <span class="header-username">{{ authStore.name }}</span>
+                  <el-icon class="el-icon--right"><arrow-down /></el-icon>
+                </div>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="logout">
+                      <el-icon><switch-button /></el-icon>退出登录
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </div>
         </el-header>
         
@@ -51,9 +69,12 @@ import SideMenu from '../components/SideMenu.vue'
 import UserList from '../components/UserList.vue'
 import UserForm from '../components/UserForm.vue'
 import { useUserStore } from '../stores/user.js'
+import { useAuthStore } from '../stores/auth.js'
+import { ArrowDown, SwitchButton } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 
 // 活跃菜单项
 const activeMenu = ref('users')
@@ -170,6 +191,14 @@ const handleMenuSelect = (menuId) => {
       break
   }
 }
+
+// 处理用户操作命令
+const handleCommand = (command) => {
+  if (command === 'logout') {
+    authStore.logout()
+    router.push('/login')
+  }
+}
 </script>
 
 <style scoped>
@@ -203,6 +232,27 @@ const handleMenuSelect = (menuId) => {
   font-size: var(--font-size-large);
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.header-avatar {
+  margin-right: var(--spacing-small);
+}
+
+.header-username {
+  margin-right: var(--spacing-small);
+  font-size: var(--font-size-medium);
+  color: var(--text-secondary);
 }
 
 .el-main {
