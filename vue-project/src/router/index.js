@@ -16,22 +16,47 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: HomeView
+      component: HomeView,
+      meta: {
+        title: '仪表盘',
+        icon: 'Odometer'
+      }
     },
     {
       path: '/users',
       name: 'users',
-      component: UserManagement
+      component: UserManagement,
+      meta: {
+        title: '用户管理',
+        icon: 'User'
+      }
     },
     {
       path: '/roles',
       name: 'roles',
-      component: RoleManagement
+      component: RoleManagement,
+      meta: {
+        title: '角色管理',
+        icon: 'Key'
+      }
     },
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
+      meta: {
+        title: '登录',
+        hidden: true  // 在标签页中隐藏
+      }
+    },
+    {
+      // 用于刷新页面的辅助路由
+      path: '/redirect/:path(.*)',
+      name: 'redirect',
+      component: () => import('../views/Redirect.vue'),
+      meta: {
+        hidden: true
+      }
     }
   ]
 })

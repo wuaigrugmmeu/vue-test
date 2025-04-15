@@ -31,6 +31,9 @@
           </div>
         </el-header>
         
+        <!-- 添加标签页导航区域 -->
+        <TabsView />
+        
         <el-main>
           <div class="content-body">
             <slot></slot>
@@ -42,9 +45,12 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
+import { useTabsStore } from '../../stores/tabs.js';
+import { watch } from 'vue';
 import SideMenu from '../SideMenu.vue';
+import TabsView from '../common/TabsView.vue';
 import { ArrowDown, SwitchButton } from '@element-plus/icons-vue';
 
 const props = defineProps({
@@ -60,7 +66,9 @@ const props = defineProps({
 
 const emit = defineEmits(['menu-select']);
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
+const tabsStore = useTabsStore();
 
 // 处理用户操作命令
 const handleCommand = (command) => {
@@ -69,6 +77,17 @@ const handleCommand = (command) => {
     router.push('/login');
   }
 };
+
+// 监听路由变化，动态添加标签页
+watch(() => route.path, () => {
+  if (!route.meta?.hidden) {
+    tabsStore.addTab({
+      path: route.path,
+      name: route.name,
+      meta: route.meta
+    });
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
