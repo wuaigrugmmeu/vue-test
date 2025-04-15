@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import HomeView from '../views/HomeView.vue'
+import UserManagement from '../views/UserManagement.vue'
+import RoleManagement from '../views/RoleManagement.vue'
 
 const routes = [
   {
@@ -12,6 +14,18 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HomeView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/users',
+    name: 'UserManagement',
+    component: UserManagement,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/roles',
+    name: 'RoleManagement',
+    component: RoleManagement,
     meta: { requiresAuth: true }
   }
 ]

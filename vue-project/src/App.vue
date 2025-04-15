@@ -3,7 +3,6 @@
 </script>
 
 <template>
-  <!-- 路由出口，将显示当前路由匹配的组件 -->
   <router-view></router-view>
 </template>
 
@@ -16,7 +15,7 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
   background-color: #f5f5f5;
 }
 </style>

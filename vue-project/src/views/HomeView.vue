@@ -13,8 +13,24 @@
 
     <main>
       <div class="content">
-        <h2>登录成功</h2>
-        <p>这是您成功登录后看到的页面</p>
+        <h2>系统功能</h2>
+        <div class="feature-cards">
+          <div class="card" @click="navigateTo('/users')">
+            <div class="card-icon">👥</div>
+            <h3>用户管理</h3>
+            <p>管理系统用户，支持增删改查和分页查询</p>
+          </div>
+          <div class="card disabled">
+            <div class="card-icon">🔑</div>
+            <h3>角色管理</h3>
+            <p>管理系统角色和权限（即将推出）</p>
+          </div>
+          <div class="card disabled">
+            <div class="card-icon">⚙️</div>
+            <h3>系统设置</h3>
+            <p>系统配置和参数设置（即将推出）</p>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -50,6 +66,10 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('退出登录失败', error)
   }
+}
+
+const navigateTo = (path) => {
+  router.push(path)
 }
 </script>
 
@@ -108,5 +128,55 @@ h1 {
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-top: 0;
+  color: #303133;
+  margin-bottom: 25px;
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.card {
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 25px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #eaeaea;
+}
+
+.card:hover:not(.disabled) {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background-color: #f0f7ff;
+}
+
+.card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  color: #303133;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #606266;
+  margin: 0;
 }
 </style>
